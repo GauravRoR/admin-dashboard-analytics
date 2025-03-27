@@ -1,15 +1,9 @@
-import React, { Suspense, lazy, useEffect } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
-import Loader from "./components/Loader";
-
-
+import React, { Suspense, useEffect } from "react";
+import { createBrowserRouter, RouterProvider, Outlet, useLocation } from "react-router-dom";
 import "./charts/ChartjsConfig";
-
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-
-const App: React.FC = () => {
+import Loader from "./components/Loader";
+const Layout: React.FC = () => {
   const location = useLocation();
-
   useEffect(() => {
     const htmlElement = document.querySelector("html");
     if (htmlElement) {
@@ -18,14 +12,27 @@ const App: React.FC = () => {
       htmlElement.style.scrollBehavior = "";
     }
   }, [location.pathname]);
-
-  return (
-    <Suspense fallback={<Loader />}>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-      </Routes>
-    </Suspense>
-  );
+  return <Outlet />;
 };
+const Dashboard = React.lazy(() => import("./pages/Dashboard"));
 
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Layout />,
+    children: [
+      {
+        index: true,
+        element: (
+          <Suspense fallback={<Loader />}>
+            <Dashboard />
+          </Suspense>
+        ),
+      },
+    ],
+  },
+]);
+const App: React.FC = () => {
+  return <RouterProvider router={router} fallbackElement={<Loader />} />;
+};
 export default App;
